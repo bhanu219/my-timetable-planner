@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Timetable Planner</title>
+<meta name="theme-color" content="#3D4FEA" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<link rel="manifest" href="manifest.json" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F6F8;
+    --surface: #FFFFFF;
+    --ink: #1B2430;
+    --muted: #6B7280;
+    --muted-2: #9AA3AF;
+    --border: #DCE1E8;
+    --border-strong: #C7CDD5;
+    --accent: #3D4FEA;
+    --accent-soft: #E8EAFC;
+
+    --skip-bg: #FBE4E2;
+    --skip-border: #E0453F;
+    --skip-text: #8A211D;
+    --skip-solid: #E0453F;
+
+    --attend-bg: #E1F3EA;
+    --attend-border: #2E9B6C;
+    --attend-text: #1F5C41;
+    --attend-solid: #2E9B6C;
+
+    --lunch-bg: #FCEFDD;
+    --lunch-border: #D98A2B;
+    --lunch-text: #7C4A12;
+
+    --lab-bg: #EAE7FB;
+    --lab-border: #6D5BD0;
+    --lab-text: #3B2F80;
+    --lab-solid: #6D5BD0;
+
+    --free-bg: #EEF0F3;
+    --free-border: #D7DBE0;
+    --free-text: #97A0AB;
+
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+
+    --shadow-md: 0 6px 20px rgba(27, 36, 48, 0.12);
+
+    --font-display: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-body: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; }
+
+  .app {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 24px 52px;
+  }
+
+  /* ---------- Header ---------- */
+  .app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .title-block h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .subtitle {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .today-indicator {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+    padding-top: 6px;
+    text-align: right;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 16px;
+    padding: 14px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .stats { display: flex; gap: 24px; flex-wrap: wrap; }
+  .stat-chip { display: flex; flex-direction: column; }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .stat-label { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--ink);
+    padding: 9px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .btn:hover { background: #F0F1F5; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-secondary[aria-pressed="true"] {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-danger { color: var(--skip-solid); border-color: var(--skip-border); }
+  .btn-danger:hover { background: var(--skip-bg); }
+
+  /* ---------- Legend ---------- */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 0 4px;
+  }
+  .legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .swatch {
+    width: 13px;
+    height: 13px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .swatch-normal { background: var(--surface); border-color: var(--border-strong); }
+  .swatch-skip { background: var(--skip-solid); border-color: var(--skip-solid); }
+  .swatch-attend { background: var(--attend-solid); border-color: var(--attend-solid); }
+  .swatch-lunch { background: var(--lunch-border); border-color: var(--lunch-border); }
+  .swatch-lab { background: var(--lab-solid); border-color: var(--lab-solid); }
+  .swatch-free { background: var(--free-border); border-color: var(--free-border); }
+
+  /* ---------- Grid ---------- */
+  .grid-wrapper { margin-bottom: 16px; }
+  .grid-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    -webkit-overflow-scrolling: touch;
+  }
+  .timetable-grid {
+    display: grid;
+    grid-template-columns: 84px repeat(10, minmax(150px, 1fr));
+  }
+  .grid-cell {
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    min-height: 92px;
+  }
+  .corner-cell, .time-header {
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+    z-index: 3;
+    min-height: 44px;
+  }
+  .corner-cell { left: 0; z-index: 4; }
+  .time-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  .time-header--lunch { color: var(--lunch-text); }
+
+  .day-label {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .day-label--today { background: var(--accent); color: #fff; }
+  .today-caption { font-size: 10px; font-weight: 600; opacity: 0.85; margin-top: 2px; }
+
+  .cell-wrapper {
+    position: relative;
+    display: flex;
+    padding: 0;
+  }
+
+  .cell--lunch, .cell--free {
+    align-items: center;
+    justify-content: center;
+  }
+  .cell--lunch { background: var(--lunch-bg); }
+  .cell--free { background: var(--free-bg); }
+  .static-label { font-size: 12.5px; font-weight: 600; }
+  .cell--lunch .static-label { color: var(--lunch-text); }
+  .cell--free .static-label { color: var(--free-text); font-weight: 500; }
+
+  .cell-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    text-align: left;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    margin: 4px;
+    padding: 8px 8px 22px 8px;
+    min-height: 84px;
+    position: relative;
+    transition: background-color 0.22s ease, border-color 0.22s ease;
+  }
+  .cell-main:hover { filter: brightness(0.98); }
+  .cell-main:active { transform: scale(0.98); }
+  .cell-main:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @keyframes cellPulse {
+    0% { transform: scale(0.95); }
+    60% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+  .cell-main.just-changed { animation: cellPulse 0.25s ease; }
+
+  .cell--lecture.state--normal { background: var(--surface); border-color: var(--border); color: var(--ink); }
+  .cell--lab.state--normal { background: var(--lab-bg); border-color: var(--lab-border); color: var(--lab-text); }
+  .cell-main.state--skip { background: var(--skip-bg); border-color: var(--skip-border); color: var(--skip-text); }
+  .cell-main.state--attend { background: var(--attend-bg); border-color: var(--attend-border); color: var(--attend-text); }
+
+  .badge-lab {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--lab-solid);
+    color: #fff;
+    align-self: flex-start;
+  }
+  .cell-subject { font-size: 13px; font-weight: 600; line-height: 1.25; }
+  .cell-tags { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 5px;
+    background: rgba(27,36,48,0.07);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .cell-teacher { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+  .cell-room { font-size: 10.5px; font-weight: 600; color: var(--muted-2); }
+
+  .status-pill {
+    position: absolute;
+    left: 8px;
+    bottom: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    display: none;
+  }
+  .status-pill--skip { background: var(--skip-solid); color: #fff; }
+  .status-pill--attend { background: var(--attend-solid); color: #fff; }
+  .state--skip .status-pill--skip { display: inline-block; }
+  .state--attend .status-pill--attend { display: inline-block; }
+
+  .attend-toggle {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-strong);
+    background: #fff;
+    color: var(--muted-2);
+    font-size: 11px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 2;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .attend-toggle:hover { border-color: var(--attend-solid); color: var(--attend-solid); }
+  .attend-toggle.is-active { background: var(--attend-solid); border-color: var(--attend-solid); color: #fff; }
+  .attend-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Footer & toast ---------- */
+  .app-footer { margin-top: 18px; font-size: 12px; color: var(--muted-2); }
+
+  .toast {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 50;
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  @media (max-width: 640px) {
+    .app { padding: 18px 14px 40px; }
+    .title-block h1 { font-size: 22px; }
+    .today-indicator { text-align: left; padding-top: 0; }
+    .timetable-grid { grid-template-columns: 70px repeat(10, minmax(134px, 1fr)); }
+    .cell-subject { font-size: 12px; }
+    .cell-teacher, .cell-room, .tag { font-size: 10px; }
+    .day-label { font-size: 12.5px; padding: 8px; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .actions { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <div class="title-block">
+        <h1>My Timetable Planner</h1>
+        <p class="subtitle">CSE-A | III Year | G2</p>
+      </div>
+      <div class="today-indicator" id="todayIndicator"></div>
+    </header>
+
+    <section class="toolbar" aria-label="Attendance summary and controls">
+      <div class="stats">
+        <div class="stat-chip">
+          <span class="stat-value"><span id="skipCount">0</span></span>
+          <span class="stat-label" id="skipCountLabel">lectures skipped</span>
+        </div>
+        <div class="stat-chip">
+          <span class="stat-value" id="attendancePct">100%</span>
+          <span class="stat-label">planned attendance</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" id="todayBtn" class="btn btn-secondary" aria-pressed="false">Today's Schedule</button>
+        <button type="button" id="resetDayBtn" class="btn">Reset Day</button>
+        <button type="button" id="resetAllBtn" class="btn btn-danger">Reset All</button>
+        <button type="button" id="installBtn" class="btn" hidden>Install App</button>
+      </div>
+    </section>
+
+    <section class="legend" aria-label="Color legend">
+      <span class="legend-item"><i class="swatch swatch-normal"></i>Lecture</span>
+      <span class="legend-item"><i class="swatch swatch-skip"></i>Skip</span>
+      <span class="legend-item"><i class="swatch swatch-attend"></i>Attend</span>
+      <span class="legend-item"><i class="swatch swatch-lunch"></i>Lunch / Break</span>
+      <span class="legend-item"><i class="swatch swatch-lab"></i>G2 Lab</span>
+      <span class="legend-item"><i class="swatch swatch-free"></i>Free</span>
+    </section>
+
+    <section class="grid-wrapper">
+      <div class="grid-scroll" id="gridScroll">
+        <div class="timetable-grid" id="timetableGrid" aria-label="Weekly class timetable"></div>
+      </div>
+    </section>
+
+    <footer class="app-footer">
+      <p>Built from your official CSE-A &middot; III Year timetable. Your plan is saved automatically on this device. Tap any lecture or lab to mark it skipped; tap the small circle to mark it as attending.</p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =====================================================================
+     DATA
+     Edit this section to update your timetable. Each day maps time-slot
+     labels (must match TIME_SLOTS exactly) to an entry describing what
+     happens then. This is already filtered to the G2 group for labs.
+
+     entry.kind: 'lecture' | 'lab' | 'lunch' | 'free'
+     entry.subject / code / session ('L' or 'P') / teacher / room
+  ===================================================================== */
+
+  var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  var DAY_FULL_NAMES = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday' };
+
+  var TIME_SLOTS = [
+    '9:00-9:50',
+    '09:50-10:40',
+    '10:45-11:35',
+    '11:35-12:25',
+    '12:25-01:15',
+    '01:15-02:05',
+    '02:05-02:55',
+    '03:00-03:50',
+    '03:50-04:40',
+    '04:40-05:30'
+  ];
+  var LUNCH_SLOT = '12:25-01:15';
+
+  var TIMETABLE_DATA = {
+    Mon: {
+      '9:00-9:50':   { kind: 'lecture', subject: 'Data Structure', code: 'BCS-301', session: 'L', teacher: 'Dr. YB Singh', room: 'E-003' },
+      '09:50-10:40': { kind: 'lecture', subject: 'COA', code: 'BCS302', session: 'L', teacher: 'Ms. Swati Rehal', room: 'E-003' },
+      '10:45-11:35': { kind: 'lecture', subject: 'QALR-301UG', code: '', session: 'L', teacher: 'Mr. Kranthi Teja', room: 'E-003' },
+      '11:35-12:25': { kind: 'lecture', subject: 'Python Prog', code: 'BCC302', session: 'L', teacher: 'Mr. Vikas Kumar', room: 'E-003' },
+      '12:25-01:15': { kind: 'lunch' },
+      '01:15-02:05': { kind: 'lab', subject: 'WDW', code: 'BCS353', session: 'P', teacher: 'Dr. Mayank Dixit, Mr. Omprakash Suman', room: 'Lab C-204' },
+      '02:05-02:55': { kind: 'lab', subject: 'WDW', code: 'BCS353', session: 'P', teacher: 'Dr. Mayank Dixit, Mr. Omprakash Suman', room: 'Lab C-204' },
+      '03:00-03:50': { kind: 'lecture', subject: 'Digital Electronics', code: 'BOE310', session: 'L', teacher: 'Mr. Gavendra Singh', room: 'E-003' },
+      '03:50-04:40': { kind: 'lecture', subject: 'DSTL', code: 'BCS303', session: 'L', teacher: 'Ms. Anju Joshi', room: 'E-003' },
+      '04:40-05:30': { kind: 'free' }
+    },
+    Tue: {
+      '9:00-9:50':   { kind: 'lab', subject: 'MP/IA-3', code: '', session: 'P', teacher: 'Ms. Anju Joshi', room: 'Lab C-205' },
+      '09:50-10:40': { kind: 'lab', subject: 'MP/IA-3', code: '', session: 'P', teacher: 'Ms. Anju Joshi', room: 'Lab C-205' },
+      '10:45-11:35': { kind: 'lecture', subject: 'VAPR-302UG', code: '', session: 'L', teacher: 'Trainer VAPR302UG', room: 'E-003' },
+      '11:35-12:25': { kind: 'lecture', subject: 'Data Structure', code: 'BCS-301', session: 'L', teacher: 'Dr. YB Singh', room: 'E-003' },
+      '12:25-01:15': { kind: 'lunch' },
+      '01:15-02:05': { kind: 'lecture', subject: 'QALR-301UG', code: '', session: 'L', teacher: 'Mr. Kranthi Teja', room: 'E-003' },
+      '02:05-02:55': { kind: 'lecture', subject: 'DSTL', code: 'BCS303', session: 'L', teacher: 'Ms. Anju Joshi', room: 'E-003' },
+      '03:00-03:50': { kind: 'lecture', subject: 'COA', code: 'BCS302', session: 'L', teacher: 'Ms. Swati Rehal', room: 'E-003' },
+      '03:50-04:40': { kind: 'lecture', subject: 'Digital Electronics', code: 'BOE310', session: 'L', teacher: 'Mr. Gavendra Singh', room: 'E-003' },
+      '04:40-05:30': { kind: 'free' }
+    },
+    Wed: {
+      '9:00-9:50':   { kind: 'lecture', subject: 'Digital Electronics', code: 'BOE310', session: 'L', teacher: 'Mr. Gavendra Singh', room: 'E-003' },
+      '09:50-10:40': { kind: 'lecture', subject: 'DSTL', code: 'BCS303', session: 'L', teacher: 'Ms. Anju Joshi', room: 'E-003' },
+      '10:45-11:35': { kind: 'lecture', subject: 'Technical Communication', code: 'BAS301', session: 'L', teacher: 'Dr. Ram Naresh Mahato', room: 'E-003' },
+      '11:35-12:25': { kind: 'lecture', subject: 'Python Prog', code: 'BCC302', session: 'L', teacher: 'Mr. Vikas Kumar', room: 'E-003' },
+      '12:25-01:15': { kind: 'lunch' },
+      '01:15-02:05': { kind: 'lecture', subject: 'Data Structure', code: 'BCS-301', session: 'L', teacher: 'Dr. YB Singh', room: 'E-003' },
+      '02:05-02:55': { kind: 'lecture', subject: 'COA', code: 'BCS302', session: 'L', teacher: 'Ms. Swati Rehal', room: 'E-003' },
+      '03:00-03:50': { kind: 'lab', subject: 'PP Lab', code: 'BCC302', session: 'P', teacher: 'Mr. Vikas Kumar, Dr. Lakshita Agrawal', room: 'Lab E-006B' },
+      '03:50-04:40': { kind: 'lab', subject: 'PP Lab', code: 'BCC302', session: 'P', teacher: 'Mr. Vikas Kumar, Dr. Lakshita Agrawal', room: 'Lab E-006B' },
+      '04:40-05:30': { kind: 'free' }
+    },
+    Thu: {
+      '9:00-9:50':   { kind: 'lecture', subject: 'DSTL', code: 'BCS303', session: 'L', teacher: 'Ms. Anju Joshi', room: 'E-003' },
+      '09:50-10:40': { kind: 'lecture', subject: 'Technical Communication', code: 'BAS301', session: 'L', teacher: 'Dr. Ram Naresh Mahato', room: 'E-003' },
+      '10:45-11:35': { kind: 'lab', subject: 'COA Lab', code: 'BCS352', session: 'P', teacher: 'Ms. Swati Rehal, Ms. Shikha Singh', room: 'Lab D-214' },
+      '11:35-12:25': { kind: 'lab', subject: 'COA Lab', code: 'BCS352', session: 'P', teacher: 'Ms. Swati Rehal, Ms. Shikha Singh', room: 'Lab D-214' },
+      '12:25-01:15': { kind: 'lunch' },
+      '01:15-02:05': { kind: 'lecture', subject: 'COA', code: 'BCS302', session: 'L', teacher: 'Ms. Swati Rehal', room: 'E-003' },
+      '02:05-02:55': { kind: 'lecture', subject: 'Data Structure', code: 'BCS-301', session: 'L', teacher: 'Dr. YB Singh', room: 'E-003' },
+      '03:00-03:50': { kind: 'lecture', subject: 'Digital Electronics', code: 'BOE310', session: 'L', teacher: 'Mr. Gavendra Singh', room: 'E-003' },
+      '03:50-04:40': { kind: 'lecture', subject: 'Digital Electronics', code: 'BOE310', session: 'L', teacher: 'Mr. Gavendra Singh', room: 'E-003' },
+      '04:40-05:30': { kind: 'free' }
+    },
+    Fri: {
+      '9:00-9:50':   { kind: 'lab', subject: 'DS LAB', code: 'BCS351', session: 'P', teacher: 'Dr. YB Singh, Mr. Vipin Kumar Chaudhary', room: 'Lab E-006B' },
+      '09:50-10:40': { kind: 'lab', subject: 'DS LAB', code: 'BCS351', session: 'P', teacher: 'Dr. YB Singh, Mr. Vipin Kumar Chaudhary', room: 'Lab E-006B' },
+      '10:45-11:35': { kind: 'lecture', subject: 'Technical Communication', code: 'BAS301', session: 'L', teacher: 'Dr. Ram Naresh Mahato', room: 'E-003' },
+      '11:35-12:25': { kind: 'lecture', subject: 'Data Structure', code: 'BCS-301', session: 'L', teacher: 'Dr. YB Singh', room: 'E-003' },
+      '12:25-01:15': { kind: 'lunch' },
+      '01:15-02:05': { kind: 'lecture', subject: 'VAPR-302UG', code: '', session: 'L', teacher: 'Trainer VAPR302UG', room: 'E-003' },
+      '02:05-02:55': { kind: 'lecture', subject: 'DSTL', code: 'BCS303', session: 'L', teacher: 'Ms. Anju Joshi', room: 'E-003' },
+      '03:00-03:50': { kind: 'lecture', subject: 'COA', code: 'BCS302', session: 'L', teacher: 'Ms. Swati Rehal', room: 'E-003' },
+      '03:50-04:40': { kind: 'free' },
+      '04:40-05:30': { kind: 'free' }
+    }
+  };
+
+  /* =====================================================================
+     STATE (persisted to localStorage)
+  ===================================================================== */
+
+  var STORAGE_KEY = 'myTimetablePlanner.cellStates.v2';
+  var cellStates = loadStates();
+  var showingTodayOnly = false;
+
+  function loadStates() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      console.warn('Could not read saved selections, starting fresh.', e);
+      return {};
+    }
+  }
+
+  function saveStates() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cellStates));
+    } catch (e) {
+      console.warn('Could not save selections.', e);
+    }
+  }
+
+  function persistPlannerState() {
+    // Save the complete plan immediately so it survives refreshes,
+    // closing the browser, and reopening the installed Android app.
+    saveStates();
+    try {
+      localStorage.setItem(STORAGE_KEY + '.savedAt', new Date().toISOString());
+    } catch (e) {}
+  }
+
+  function getState(cellId) {
+    return cellStates[cellId] || 'normal';
+  }
+
+  function setState(cellId, state) {
+    if (state === 'normal') {
+      delete cellStates[cellId];
+    } else {
+      cellStates[cellId] = state;
+    }
+    persistPlannerState();
+  }
+
+  /* =====================================================================
+     DAY / DATE HELPERS
+  ===================================================================== */
+
+  function todayKey() {
+    var map = { 0: null, 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: null };
+    return map[new Date().getDay()];
+  }
+
+  function renderTodayIndicator() {
+    var el = document.getElementById('todayIndicator');
+    var now = new Date();
+    el.textContent = now.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+  }
+
+  /* =====================================================================
+     DOM BUILD HELPERS
+  ===================================================================== */
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function buildCornerCell() {
+    return el('div', 'grid-cell corner-cell');
+  }
+
+  function buildTimeHeaderCell(slotLabel, isLunch) {
+    var cell = el('div', 'grid-cell time-header' + (isLunch ? ' time-header--lunch' : ''), slotLabel);
+    return cell;
+  }
+
+  function buildDayLabelCell(day, isToday) {
+    var cell = el('div', 'grid-cell day-label' + (isToday ? ' day-label--today' : ''));
+    cell.dataset.day = day;
+    cell.appendChild(el('span', 'day-name', day));
+    if (isToday) cell.appendChild(el('span', 'today-caption', 'Today'));
+    return cell;
+  }
+
+  function buildStaticCell(day, kind, label) {
+    var wrapper = el('div', 'grid-cell cell-wrapper cell--' + kind);
+    wrapper.dataset.day = day;
+    wrapper.appendChild(el('span', 'static-label', label));
+    return wrapper;
+  }
+
+  function buildClassCell(day, slotIndex, entry, isToday) {
+    var cellId = day + '__' + slotIndex;
+    var state = getState(cellId);
+
+    var wrapper = el('div', 'grid-cell cell-wrapper');
+    wrapper.dataset.day = day;
+
+    var btn = el('button', 'cell-main cell--' + entry.kind + ' state--' + state);
+    btn.type = 'button';
+    btn.dataset.cellId = cellId;
+    btn.setAttribute('aria-pressed', state === 'skip' ? 'true' : 'false');
+
+    if (entry.kind === 'lab') {
+      btn.appendChild(el('span', 'badge-lab', 'G2 LAB'));
+    }
+
+    btn.appendChild(el('span', 'cell-subject', entry.subject));
+
+    if (entry.code || entry.session) {
+      var tags = el('div', 'cell-tags');
+      if (entry.code) tags.appendChild(el('span', 'tag tag-code', entry.code));
+      if (entry.session) {
+        var sessionTag = el('span', 'tag tag-session', entry.session);
+        sessionTag.title = entry.session === 'L' ? 'Lecture' : 'Practical';
+        tags.appendChild(sessionTag);
+      }
+      btn.appendChild(tags);
+    }
+
+    if (entry.teacher) btn.appendChild(el('span', 'cell-teacher', entry.teacher));
+    if (entry.room) btn.appendChild(el('span', 'cell-room', entry.room));
+
+    btn.appendChild(el('span', 'status-pill status-pill--skip', 'Skipped'));
+    btn.appendChild(el('span', 'status-pill status-pill--attend', 'Attending'));
+
+    wrapper.appendChild(btn);
+
+    var attendToggle = el('button', 'attend-toggle' + (state === 'attend' ? ' is-active' : ''), '\u2713');
+    attendToggle.type = 'button';
+    attendToggle.dataset.cellId = cellId;
+    attendToggle.setAttribute('aria-label', 'Mark as attending');
+    wrapper.appendChild(attendToggle);
+
+    return wrapper;
+  }
+
+  /* =====================================================================
+     GRID RENDER
+  ===================================================================== */
+
+  function buildGrid() {
+    var grid = document.getElementById('timetableGrid');
+    grid.innerHTML = '';
+    var tKey = todayKey();
+
+    grid.appendChild(buildCornerCell());
+    TIME_SLOTS.forEach(function (slot) {
+      grid.appendChild(buildTimeHeaderCell(slot, slot === LUNCH_SLOT));
+    });
+
+    DAYS.forEach(function (day) {
+      var isToday = day === tKey;
+      grid.appendChild(buildDayLabelCell(day, isToday));
+      TIME_SLOTS.forEach(function (slot, slotIndex) {
+        var entry = TIMETABLE_DATA[day][slot];
+        if (entry.kind === 'lunch') {
+          grid.appendChild(buildStaticCell(day, 'lunch', 'Lunch Break'));
+        } else if (entry.kind === 'free') {
+          grid.appendChild(buildStaticCell(day, 'free', 'Free'));
+        } else {
+          grid.appendChild(buildClassCell(day, slotIndex, entry, isToday));
+        }
+      });
+    });
+
+    if (showingTodayOnly) applyTodayFilter(true);
+  }
+
+  function updateCellDOM(cellId) {
+    var btn = document.querySelector('button.cell-main[data-cell-id="' + cellId + '"]');
+    if (!btn) return;
+    var state = getState(cellId);
+    btn.classList.remove('state--normal', 'state--skip', 'state--attend');
+    btn.classList.add('state--' + state);
+    btn.setAttribute('aria-pressed', state === 'skip' ? 'true' : 'false');
+
+    var attendBtn = document.querySelector('button.attend-toggle[data-cell-id="' + cellId + '"]');
+    if (attendBtn) attendBtn.classList.toggle('is-active', state === 'attend');
+
+    btn.classList.remove('just-changed');
+    void btn.offsetWidth; /* restart animation */
+    btn.classList.add('just-changed');
+  }
+
+  /* =====================================================================
+     STATS
+  ===================================================================== */
+
+  function refreshStats() {
+    var totalEligible = 0;
+    var skipped = 0;
+
+    DAYS.forEach(function (day) {
+      TIME_SLOTS.forEach(function (slot, idx) {
+        var entry = TIMETABLE_DATA[day][slot];
+        if (entry.kind === 'lecture' || entry.kind === 'lab') {
+          totalEligible++;
+          if (getState(day + '__' + idx) === 'skip') skipped++;
+        }
+      });
+    });
+
+    document.getElementById('skipCount').textContent = String(skipped);
+    document.getElementById('skipCountLabel').textContent = skipped === 1 ? 'lecture skipped' : 'lectures skipped';
+
+    var pct = totalEligible === 0 ? 100 : Math.round(((totalEligible - skipped) / totalEligible) * 100);
+    document.getElementById('attendancePct').textContent = pct + '%';
+  }
+
+  /* =====================================================================
+     TOAST
+  ===================================================================== */
+
+  var toastTimer = null;
+  function showToast(message) {
+    var toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('is-visible');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove('is-visible');
+    }, 2600);
+  }
+
+  /* =====================================================================
+     TODAY FILTER / RESET CONTROLS
+  ===================================================================== */
+
+  function applyTodayFilter(active) {
+    var tKey = todayKey();
+    var cells = document.querySelectorAll('.grid-cell[data-day]');
+    cells.forEach(function (cell) {
+      cell.style.display = !active || cell.dataset.day === tKey ? '' : 'none';
+    });
+  }
+
+  function initControls() {
+    var todayBtn = document.getElementById('todayBtn');
+    var resetDayBtn = document.getElementById('resetDayBtn');
+    var resetAllBtn = document.getElementById('resetAllBtn');
+
+    todayBtn.addEventListener('click', function () {
+      var tKey = todayKey();
+      if (!tKey) {
+        showToast('No classes are scheduled today \u2014 enjoy the weekend!');
+        return;
+      }
+      showingTodayOnly = !showingTodayOnly;
+      applyTodayFilter(showingTodayOnly);
+      todayBtn.textContent = showingTodayOnly ? 'Show Full Week' : "Today's Schedule";
+      todayBtn.setAttribute('aria-pressed', String(showingTodayOnly));
+    });
+
+    resetDayBtn.addEventListener('click', function () {
+      var tKey = todayKey();
+      if (!tKey) {
+        showToast('No classes are scheduled today \u2014 nothing to reset.');
+        return;
+      }
+      var fullName = DAY_FULL_NAMES[tKey];
+      if (!window.confirm('Reset all skip/attend selections for ' + fullName + '?')) return;
+      Object.keys(cellStates).forEach(function (cellId) {
+        if (cellId.indexOf(tKey + '__') === 0) delete cellStates[cellId];
+      });
+      persistPlannerState();
+      buildGrid();
+      refreshStats();
+      showToast(fullName + "'s selections have been reset.");
+    });
+
+    resetAllBtn.addEventListener('click', function () {
+      if (!window.confirm('Reset ALL skip/attend selections for the entire week? This cannot be undone.')) return;
+      cellStates = {};
+      persistPlannerState();
+      buildGrid();
+      refreshStats();
+      showToast('All selections have been reset.');
+    });
+  }
+
+  function initGridClicks() {
+    var grid = document.getElementById('timetableGrid');
+    grid.addEventListener('click', function (e) {
+      var attendBtn = e.target.closest('.attend-toggle');
+      if (attendBtn) {
+        var cellId = attendBtn.dataset.cellId;
+        setState(cellId, getState(cellId) === 'attend' ? 'normal' : 'attend');
+        updateCellDOM(cellId);
+        refreshStats();
+        return;
+      }
+      var mainBtn = e.target.closest('.cell-main');
+      if (mainBtn) {
+        var id = mainBtn.dataset.cellId;
+        setState(id, getState(id) === 'skip' ? 'normal' : 'skip');
+        updateCellDOM(id);
+        refreshStats();
+      }
+    });
+  }
+
+  /* =====================================================================
+     INIT
+  ===================================================================== */
+
+  var deferredInstallPrompt = null;
+
+  function initPWA() {
+    if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      navigator.serviceWorker.register('./sw.js').catch(function (err) {
+        console.warn('Service worker registration failed:', err);
+      });
+    }
+
+    var installBtn = document.getElementById('installBtn');
+    if (!installBtn) return;
+
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      installBtn.hidden = false;
+    });
+
+    installBtn.addEventListener('click', async function () {
+      if (!deferredInstallPrompt) return;
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+      installBtn.hidden = true;
+    });
+
+    window.addEventListener('appinstalled', function () {
+      installBtn.hidden = true;
+      showToast('Timetable Planner installed as an app.');
+    });
+  }
+
+  function init() {
+    renderTodayIndicator();
+    buildGrid();
+    refreshStats();
+    initGridClicks();
+    initControls();
+    initPWA();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
